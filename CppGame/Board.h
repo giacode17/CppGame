@@ -30,7 +30,7 @@ public:
 	void moveItem(int fromRow, int fromColumn, int toRow, int toColum);
 	void moveItem(Item* item, int toRow, int toColum);
 	void exchangeItems(int row0, int column0, int row1, int column1);
-	void refresh();
+	bool refresh();
 	
 	MatchSet matchedItems() const; //set do not allow duplicate element.
 	MatchSet matchedItems(int row, int column) const;

@@ -93,17 +93,18 @@ void Board::exchangeItems(int row0, int column0, int row1, int column1)
 bool Board::refresh()
 {
 	MatchSet matched = matchedItems();
-	if (matched.size() < 3) false;
+	if (matched.size() < 3) 
+		return false;
 	for (const auto& pair : matched)
 	{
 		removeItem(pair.first, pair.second);
 	}
-	//refill(refresh) vacant items with above items
+	//refill(refresh) vacant items with above items_existing items
 	for (int column = 0; column < _items[0].size(); ++column)
 	{
 		for (int row = _items.size() - 1; row >= 0; --row)
 		{
-			if (_items[row][column] != nullptr) continue;
+			if (_items[row][column] != nullptr) { continue; }
 			for (int i = row - 1; i >= 0; --i)
 			{
 				if (_items[i][column] != nullptr)
@@ -115,6 +116,20 @@ bool Board::refresh()
 			}
 		}
 	}
+	
+	//refill with new random items
+	for (int column = 0; column < _items[0].size(); ++column)
+	{
+		for (int row = 0; row < _items.size(); ++row) //check with upper side.
+		{
+			if (_items[row][column] == nullptr)
+			{
+				addItem(row, column);
+			}
+			else { break; }
+		}
+	}
+	
 	return true;
 }
 
@@ -189,8 +204,8 @@ MatchSet Board::matchedItemsHorizontal(int row, int column) const
 MatchSet Board::matchedItemsvertical(int row, int column) const
 {
 	Item* item = _items[row][column];
-	if (item == nullptr)
-		return {};
+	if (item == nullptr) {return {};}
+	
 	MatchSet upMatched; //check leftside
 	for (int i = row - 1; i >= 0; --i)
 	{
@@ -251,12 +266,10 @@ void Board::itemDragEvent(Item* item, Item::Direction dir) //Exchange Items
 
 	//Item* item0 = item;
 	Item* item1 = _items[row1][column1];
-	if (item1 == nullptr) 
-		return;
+	if (item1 == nullptr) { return; }
 	exchangeItems(row0, column0, row1, column1);
 	while (refresh()); //After exchange, refresh: delete matched items.
 	
-
 }
 
 
