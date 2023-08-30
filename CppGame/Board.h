@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <random>
+#include <set>
 #include <QtWidgets/QGraphicsPixmapItem>
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsRectItem> //Make a big square to consolidate the images as a big square
@@ -9,6 +10,9 @@
 #include "Item.h"
 
 // Make board for arragne the images
+
+using MatchPair = std::pair<int, int>; //aliasing?
+using MatchSet = std::set<MatchPair>;
 
 class Board : public Item::EventListener
 {
@@ -24,8 +28,14 @@ public:
 	void addItem(int row, int column); 
 	void removeItem(int row, int column);
 	void moveItem(Item* item, int toRow, int toColum);
+	void exchangeItems(int row0, int column0, int row1, int column1);
+	
+	MatchSet matchedItem() const; //set do not allow duplicate element.
+	MatchSet matchedItem(int row, int column) const;
+	MatchSet matchedItemsHorizontal(int row, int column) const;
+	MatchSet matchedItemsvertical(int row, int column) const;
 
-	void exchange(int row0, int column0, int row1, int column1);
+	
 	virtual void itemDragEvent(Item* item, Item::Direction dir);//The result of Drag Event: Exchange Item
 };
 

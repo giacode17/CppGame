@@ -1,6 +1,7 @@
 #include "Board.h" 
 #include "Consts.h"
 #include "Item.h"
+#include "qdebug.h"
 //#include <vector>
 //#include <random> //show the image randomly
 
@@ -22,6 +23,11 @@ Board::Board(QGraphicsScene* scene)
 		{
 			addItem(row, column);
 		} 
+	}
+
+	for (const MatchPair& pair : matchedItem())
+	{
+		qDebug() << pair.first << pair.second;
 	}
 }
 
@@ -73,13 +79,115 @@ void Board::moveItem(Item* item, int toRow, int toColum)
 	_items[toRow][toColum] = item;
 }
 
-void Board::exchange(int row0, int column0, int row1, int column1)
+void Board::exchangeItems(int row0, int column0, int row1, int column1)
 {
 	Item* item0 = _items[row0][column0];
 	Item* item1 = _items[row1][column1];
 
 	moveItem(item0, row1, column1);
 	moveItem(item1, row0, column0);
+}
+
+//Every item must be checked to see if there are any duplicates.
+MatchSet Board::matchedItem() const
+{
+	std::set<std::pair<int, int>> matched;
+
+	for (int row = 0; row < _items.size(); ++row)
+	{
+		for (int column = 0; column < _items[row].size(); ++column)
+		{
+			MatchSet m = matchedItem(row, column);//For opimization: use unorderedSet
+			if (m.size() >= 3)
+			{
+				matched.insert(m.begin(), m.end());
+			}
+		}
+	}
+
+	return matched;
+}
+
+MatchSet Board::matchedItem(int row, int column) const
+{
+	MatchSet horizontalMatched = matchedItemsHorizontal(row, column);
+	MatchSet verticalMatched = matchedItemsvertical(row, column);
+
+	MatchSet matched;
+	if (horizontalMatched.size() >= 3)
+		matched.insert(horizontalMatched.begin(), horizontalMatched.end());
+	if (verticalMatched.size() >= 3)
+		matched.insert(verticalMatched.begin(), verticalMatched.end()); 
+
+	return matched;
+}
+ 
+MatchSet Board::matchedItemsHorizontal(int row, int column) const
+{
+	Item* item = _items[row][column];
+	if (item == nullptr)
+		return {};
+	MatchSet leftMatched; //check leftside
+	for (int i = column - 1; i >= 0; --i)
+	{
+		if (_items[row][i] && _items[row][i]->path() == item->path()) //It can be " _items[row][i] != nullptr &&"
+		{															// To know same image or not: Comparing the path
+			leftMatched.insert({ row, i });
+		}
+		else { break; }
+	}
+	MatchSet rightMatched;//Check rightsied
+	for (int i = column - 1; i < _items[row].size(); ++i)
+	{
+		if (_items[row][i] && _items[row][i]->path() == item->path()) //It can be " _items[row][i] != nullptr &&"
+		{															// To know same image or not: Comparing the path
+			rightMatched.insert({ row, i });
+		}
+		else { break; }
+	}
+
+	//Assorted every match item to leftMached. and 1= myself.
+	if (leftMatched.size() + rightMatched.size() + 1 >= 3)
+	{
+		leftMatched.insert(rightMatched.begin(), rightMatched.end());
+		leftMatched.insert({ row, column });
+		return leftMatched;
+	}
+	else { return{}; }
+}
+
+MatchSet Board::matchedItemsvertical(int row, int column) const
+{
+	Item* item = _items[row][column];
+	if (item == nullptr)
+		return {};
+	MatchSet upMatched; //check leftside
+	for (int i = row - 1; i >= 0; --i)
+	{
+		if (_items[i][column] && _items[i][column]->path() == item->path()) //It can be " _items[row][i] != nullptr &&"
+		{															// To know same image or not: Comparing the path
+			upMatched.insert({ i, column });
+		}
+		else { break; }
+	}
+	MatchSet downMatched;//Check rightsied
+	for (int i = row - 1; i < _items.size(); ++i)
+	{
+		if (_items[i][column] && _items[i][column]->path() == item->path())
+		{
+			downMatched.insert({ i, column });
+		}
+		else { break; }
+	}
+
+	//Assorted every match item to leftMached. and 1= myself.
+	if (upMatched.size() + downMatched.size() + 1 >= 3)
+	{
+		upMatched.insert(downMatched.begin(), downMatched.end());
+		upMatched.insert({ row, column });
+		return upMatched;
+	}
+	else { return{}; }
 }
 
 void Board::itemDragEvent(Item* item, Item::Direction dir) //Exchange Items
@@ -115,10 +223,10 @@ void Board::itemDragEvent(Item* item, Item::Direction dir) //Exchange Items
 	Item* item1 = _items[row1][column1];
 	if (item1 == nullptr) 
 		return;
-	exchange(row0, column0, row1, column1);
+	exchangeItems(row0, column0, row1, column1);
 	
 
 }
 
 
-  
+   
