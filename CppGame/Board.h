@@ -27,11 +27,13 @@ public:
 	~Board();
 	void addItem(int row, int column); 
 	void removeItem(int row, int column);
+	void moveItem(int fromRow, int fromColumn, int toRow, int toColum);
 	void moveItem(Item* item, int toRow, int toColum);
 	void exchangeItems(int row0, int column0, int row1, int column1);
+	void refresh();
 	
-	MatchSet matchedItem() const; //set do not allow duplicate element.
-	MatchSet matchedItem(int row, int column) const;
+	MatchSet matchedItems() const; //set do not allow duplicate element.
+	MatchSet matchedItems(int row, int column) const;
 	MatchSet matchedItemsHorizontal(int row, int column) const;
 	MatchSet matchedItemsvertical(int row, int column) const;
 

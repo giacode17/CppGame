@@ -25,10 +25,7 @@ Board::Board(QGraphicsScene* scene)
 		} 
 	}
 
-	for (const MatchPair& pair : matchedItem())
-	{
-		qDebug() << pair.first << pair.second;
-	}
+	while (refresh()); //update the deleted section. true->repeat
 }
 
 Board::~Board()
@@ -41,7 +38,6 @@ Board::~Board()
 		}
 	}
 }
-
 
 void Board::addItem(int row, int column)
 {
@@ -70,6 +66,12 @@ void Board::removeItem(int row, int column)
 
 }
 
+void Board::moveItem(int fromRow, int fromColumn, int toRow, int toColum)
+{
+	Item* item = _items[fromRow][fromColumn];
+	moveItem(item, toRow, toColum);
+}
+
 void Board::moveItem(Item* item, int toRow, int toColum)
 {
 	item->setRow(toRow);
@@ -88,8 +90,36 @@ void Board::exchangeItems(int row0, int column0, int row1, int column1)
 	moveItem(item1, row0, column0);
 }
 
+bool Board::refresh()
+{
+	MatchSet matched = matchedItems();
+	if (matched.size() < 3) false;
+	for (const auto& pair : matched)
+	{
+		removeItem(pair.first, pair.second);
+	}
+	//refill(refresh) vacant items with above items
+	for (int column = 0; column < _items[0].size(); ++column)
+	{
+		for (int row = _items.size() - 1; row >= 0; --row)
+		{
+			if (_items[row][column] != nullptr) continue;
+			for (int i = row - 1; i >= 0; --i)
+			{
+				if (_items[i][column] != nullptr)
+				{
+					moveItem(i, column, row, column);
+					_items[i][column] = nullptr;
+					break;
+				}
+			}
+		}
+	}
+	return true;
+}
+
 //Every item must be checked to see if there are any duplicates.
-MatchSet Board::matchedItem() const
+MatchSet Board::matchedItems() const
 {
 	std::set<std::pair<int, int>> matched;
 
@@ -97,7 +127,7 @@ MatchSet Board::matchedItem() const
 	{
 		for (int column = 0; column < _items[row].size(); ++column)
 		{
-			MatchSet m = matchedItem(row, column);//For opimization: use unorderedSet
+			MatchSet m = matchedItems(row, column);//For opimization: use unorderedSet
 			if (m.size() >= 3)
 			{
 				matched.insert(m.begin(), m.end());
@@ -108,7 +138,7 @@ MatchSet Board::matchedItem() const
 	return matched;
 }
 
-MatchSet Board::matchedItem(int row, int column) const
+MatchSet Board::matchedItems(int row, int column) const
 {
 	MatchSet horizontalMatched = matchedItemsHorizontal(row, column);
 	MatchSet verticalMatched = matchedItemsvertical(row, column);
@@ -224,6 +254,7 @@ void Board::itemDragEvent(Item* item, Item::Direction dir) //Exchange Items
 	if (item1 == nullptr) 
 		return;
 	exchangeItems(row0, column0, row1, column1);
+	while (refresh()); //After exchange, refresh: delete matched items.
 	
 
 }
