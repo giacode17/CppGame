@@ -7,8 +7,9 @@
 
 
 Board::Board(QGraphicsScene* scene)
-	: _scene(scene)
+	: _scene(scene) 
 	, _gen(_device()) //inheritance
+	, _moveCount(0) //Animaiton
 {
 	_scene->addItem(&_root);
 	_root.setX(_scene->sceneRect().width() / 2 - Consts::BOARD_ITEM_SIZE * Consts::BOARD_LENGTH / 2) ;// relocate a big squre to center: move x coordinate
@@ -25,7 +26,7 @@ Board::Board(QGraphicsScene* scene)
 		} 
 	}
 
-	while (refresh()); //update the deleted section. true->repeat
+	refresh(); //update the deleted section. true->repeat
 }
 
 Board::~Board()
@@ -76,18 +77,33 @@ void Board::moveItem(Item* item, int toRow, int toColum)
 {
 	item->setRow(toRow);
 	item->setColumn(toColum);
-	item->setPos(toColum * Consts::BOARD_ITEM_SIZE, toRow * Consts::BOARD_ITEM_SIZE);
-
+	//item->setPos(toColum * Consts::BOARD_ITEM_SIZE, toRow * Consts::BOARD_ITEM_SIZE);
+	item->moveTo(toColum * Consts::BOARD_ITEM_SIZE, toRow * Consts::BOARD_ITEM_SIZE);
 	_items[toRow][toColum] = item;
+	_moveCount++;
 }
 
-void Board::exchangeItems(int row0, int column0, int row1, int column1)
+void Board::exchangeItems(int row0, int column0, int row1, int column1, bool canRevert)
 {
 	Item* item0 = _items[row0][column0];
 	Item* item1 = _items[row1][column1];
 
-	moveItem(item0, row1, column1);
-	moveItem(item1, row0, column0);
+	item0->setRow(row1);
+	item1->setRow(row0);
+
+	item0->setColumn(column1);
+	item1->setColumn(column0);
+
+	_items[row0][column0] = item1;
+	_items[row1][column1] = item0;
+
+	item0->moveTo(item1, canRevert);
+	item1->moveTo(item0, canRevert);
+
+	_moveCount += 2;
+
+	//moveItem(item0, row1, column1);
+	//moveItem(item1, row0, column0);
 }
 
 bool Board::refresh()
@@ -117,6 +133,22 @@ bool Board::refresh()
 		}
 	}
 	
+	
+	std::vector<int> emptyCounts; //To count vacant items
+	for (int column = 0; column < _items[0].size(); ++column)
+	{
+		int emptyCount = 0;
+		for (int row = 0; row < _items.size(); ++row)
+		{
+			if (_items[row][column] == nullptr)
+			{
+				emptyCount++;
+			}
+			else
+				break;
+		}
+		emptyCounts.push_back(emptyCount);
+	}
 	//refill with new random items
 	for (int column = 0; column < _items[0].size(); ++column)
 	{
@@ -125,6 +157,11 @@ bool Board::refresh()
 			if (_items[row][column] == nullptr)
 			{
 				addItem(row, column);
+
+				Item* item = _items[row][column];
+				item->setY(item->y() - emptyCounts[column] * Consts::BOARD_ITEM_SIZE);
+				moveItem(row, column, row, column);
+
 			}
 			else { break; }
 		}
@@ -264,12 +301,24 @@ void Board::itemDragEvent(Item* item, Item::Direction dir) //Exchange Items
 	if (row1 >= Consts::BOARD_LENGTH || column1 >= Consts::BOARD_LENGTH) 
 		return;
 
-	//Item* item0 = item;
 	Item* item1 = _items[row1][column1];
 	if (item1 == nullptr) { return; }
-	exchangeItems(row0, column0, row1, column1);
-	while (refresh()); //After exchange, refresh: delete matched items.
 	
+	exchangeItems(row0, column0, row1, column1, true);	
+}
+
+void Board::itemMoveFinished(Item* item0, Item* item1, bool canRevert) 
+{
+	if (--_moveCount > 0)
+		return;
+	if (refresh()) //if refresh = false; there is no matching item, so we have to reconvert. 
+		return;
+	if (!canRevert) 
+		return;
+	if (item0 == nullptr || item1 == nullptr)
+		return;
+
+	exchangeItems(item0->row(), item0->column(), item1->row(), item1->column(), false); //fase: stop revert
 }
 
 

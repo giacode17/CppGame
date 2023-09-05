@@ -19,9 +19,13 @@ class Board : public Item::EventListener
 private:
 	QGraphicsScene* _scene;
 	QGraphicsRectItem _root;
+	
 	std::vector<std::vector< Item*>> _items;//why pass the parameter as pointer
 	std::random_device _device; //get random int
 	std::mt19937 _gen;//seed: the radom int if you keep generation random number, then the speed getting lower, so we use mt19937
+
+	int _moveCount;
+
 public:
 	Board(QGraphicsScene* scene);
 	~Board();
@@ -29,7 +33,7 @@ public:
 	void removeItem(int row, int column);
 	void moveItem(int fromRow, int fromColumn, int toRow, int toColum);
 	void moveItem(Item* item, int toRow, int toColum);
-	void exchangeItems(int row0, int column0, int row1, int column1);
+	void exchangeItems(int row0, int column0, int row1, int column1, bool canRevert);
 	bool refresh();
 	
 	MatchSet matchedItems() const; //set do not allow duplicate element.
@@ -38,7 +42,8 @@ public:
 	MatchSet matchedItemsvertical(int row, int column) const;
 
 	
-	virtual void itemDragEvent(Item* item, Item::Direction dir);//The result of Drag Event: Exchange Item
+	virtual void itemDragEvent(Item* item, Item::Direction dir) override;//The result of Drag Event: Exchange Item
+	virtual void itemMoveFinished(Item* item0, Item* item1, bool canRevert) override;
 };
 
 /*

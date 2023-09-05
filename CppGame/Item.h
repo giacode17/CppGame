@@ -1,11 +1,12 @@
 #pragma once
 #include <QtWidgets/QGraphicsPixmapItem> //To implement mouse event, Use QwidgetPixItem 
-//#include <QtWidgets/QGraphicsItem>
+#include <QtWidgets/QGraphicsItem>
 #include <string>
-//#include "Board.h" 
+//#include <QObject>
 
 
-class Item :public QGraphicsPixmapItem
+ 
+class Item  :public QGraphicsPixmapItem, public QObject //QObject : connect
 {
 	class EventListener; //Forward Declaration
 public:
@@ -18,6 +19,10 @@ public:
 
 	void setRow(int row);  
 	void setColumn(int column);
+
+	void moveTo(double toX, double toY); //move to any coordinte
+	void moveTo(Item* other, bool canRevert);
+
 protected:             
 	virtual void mousePressEvent(QGraphicsSceneMouseEvent* event) override; //You can follow the library for setting function type, or object type by F12
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
@@ -44,6 +49,7 @@ public:
 	{
 	public:
 		virtual void itemDragEvent(Item* item, Item::Direction dir) = 0;
+		virtual void itemMoveFinished(Item* item0, Item* item1, bool canRevert) = 0;
 	};
 
 };

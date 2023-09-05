@@ -13,4 +13,6 @@ namespace Consts
 
     const int BOARD_LENGTH = 12; // set a game board size
     const int BOARD_ITEM_SIZE = 60; //each item size
+    const int ANIMATION_TIME = 500;
+
 }
