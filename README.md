@@ -24,8 +24,7 @@ This project is a simple Qt-based application that demonstrates the use of a `QG
   Ensure you have the following Qt modules installed:
   - `QtWidgets`
 
-## Build Instructions
+## Result
 
-1. Clone the repository:
-   ```bash
-
+<!--video-->
+![Play the game](https://github.com/giacode17/CppGame/blob/master/CppGame/result.mov)
