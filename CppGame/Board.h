@@ -1,58 +1,44 @@
 #pragma once
 
+#include <string>
 #include <vector>
-#include <random>
 #include <set>
-#include <QtWidgets/QGraphicsPixmapItem>
+#include <random>
+#include <QtWidgets/QGraphicsRectItem>
 #include <QtWidgets/QGraphicsScene>
-#include <QtWidgets/QGraphicsRectItem> //Make a big square to consolidate the images as a big square
 
 #include "Item.h"
 
-// Make board for arragne the images
-
-using MatchPair = std::pair<int, int>; //aliasing?
-using MatchSet = std::set<MatchPair>;
-
+class Values;
 class Board : public Item::EventListener
 {
 private:
-	QGraphicsScene* _scene;
-	QGraphicsRectItem _root;
-	
-	std::vector<std::vector< Item*>> _items;//why pass the parameter as pointer
-	std::random_device _device; //get random int
-	std::mt19937 _gen;//seed: the radom int if you keep generation random number, then the speed getting lower, so we use mt19937
+    QGraphicsScene* _scene;
+    Values* _values;
 
-	int _moveCount;
+    QGraphicsRectItem _root;
+    std::vector<std::vector<Item*>> _items;
+    int _animatingCount;
+    std::random_device _rd;
+    std::mt19937 _gen;
 
 public:
-	Board(QGraphicsScene* scene);
-	~Board();
-	void addItem(int row, int column); 
-	void removeItem(int row, int column);
-	void moveItem(int fromRow, int fromColumn, int toRow, int toColum);
-	void moveItem(Item* item, int toRow, int toColum);
-	void exchangeItems(int row0, int column0, int row1, int column1, bool canRevert);
-	bool refresh();
-	
-	MatchSet matchedItems() const; //set do not allow duplicate element.
-	MatchSet matchedItems(int row, int column) const;
-	MatchSet matchedItemsHorizontal(int row, int column) const;
-	MatchSet matchedItemsvertical(int row, int column) const;
+    explicit Board(QGraphicsScene* scene, Values* values);
+    ~Board();
+    virtual void itemDragEvent(const Item::Event* event) override;
+    virtual void itemMoveFinished(Item* item0, Item* item1, bool canRevert) override;
 
-	
-	virtual void itemDragEvent(Item* item, Item::Direction dir) override;//The result of Drag Event: Exchange Item
-	virtual void itemMoveFinished(Item* item0, Item* item1, bool canRevert) override;
+private:
+    bool refresh();
+    bool refresh(const std::set<std::pair<int, int>>& matched);
+    void addItem(int row, int column);
+    void removeItem(int row, int column);
+    void moveItem(int row, int column, int toRow, int toColumn);
+    void exchangeItems(int row0, int column0, int row1, int column1, bool canRevert);
+    std::set<std::pair<int, int>> matchedItems() const;
+    std::set<std::pair<int, int>> matchedItems(int row, int column) const;
+    std::set<std::pair<int, int>> matchedItemsHorizontal(int row, int column) const;
+    std::set<std::pair<int, int>> matchedItemsVertical(int row, int column) const;
+
 };
 
-/*
-1 2 3 ->items[0], row 0
-4 5 6 ->items[1], row 1
-7 8 9 ->items[2], row 2 
-_items[0][0] -> 1
-_items[1][0] -> 4
-_items[0][1] -> 2
-
-
-*/
