@@ -1,6 +1,14 @@
+
+https://github.com/user-attachments/assets/e732247b-79df-41e2-8195-91503163f7e0
 # Qt Application with Item Movement and Animation
 
 This project is a simple Qt-based application that demonstrates the use of a `QGraphicsScene` and `QGraphicsView` to display a grid of interactive items. Each item can be moved with animations, and the movement is triggered by mouse events. The program supports random item placement, item swapping, and matching logic for game-like functionality.
+
+### Result
+
+<!--video-->
+![Play the game](Uploading result1.mov…)
+
 
 ## Features
 
@@ -24,7 +32,3 @@ This project is a simple Qt-based application that demonstrates the use of a `QG
   Ensure you have the following Qt modules installed:
   - `QtWidgets`
 
-## Result
-
-<!--video-->
-![Play the game](https://github.com/giacode17/CppGame/blob/master/CppGame/result.mov)
