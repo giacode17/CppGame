@@ -1,8 +1,9 @@
 
 
-# Qt Application with Item Movement and Animation
+# Animation Match Game
 
 This project is a simple Qt-based application that demonstrates the use of a `QGraphicsScene` and `QGraphicsView` to display a grid of interactive items. Each item can be moved with animations, and the movement is triggered by mouse events. The program supports random item placement, item swapping, and matching logic for game-like functionality.
+
 
 ### Result
 
